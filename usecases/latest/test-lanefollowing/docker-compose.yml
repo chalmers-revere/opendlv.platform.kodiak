@@ -82,9 +82,10 @@ services:
             - DISPLAY=$DISPLAY
         volumes:
             - /tmp/.X11-unix:/tmp/.X11-unix
+            - .:/opt/opendlv.data/
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv/bin/opendlv-system-application-perception-detectlane --cid=${CID} --freq=20"
+        command: "/opt/opendlv/bin/opendlv-logic-perception-detectlane --cid=${CID} --freq=20"
 
     # microservice for proxy-trimble
     proxy-trimble:
@@ -105,7 +106,7 @@ services:
         depends_on:
             - odsupercomponent
         ipc: host
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20"
 
    # micro service for proxy-rhino-can
     proxy-rhino-can:

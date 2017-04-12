@@ -92,96 +92,52 @@ odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes
 
 # action-communicate
 
-# action-removeloomingconflict
-action-removeloomingconflict.correctionGain = 0.4
-action-removeloomingconflict.maxStimulusAge = 0.5
-action-removeloomingconflict.patienceDuration = 0.4
-action-removeloomingconflict.stimulusJerkThreshold = 0.02
-action-removeloomingconflict.stimulusRateThreshold = 0.02
-action-removeloomingconflict.stimulusThreshold = 0.02
-action-removeloomingconflict.equilibrium = 20.0
-
-# action-setgroundspeed
-action-setgroundspeed.correctionGain = 5.0
-action-setgroundspeed.maxStimulusAge = 4.1
-action-setgroundspeed.patienceDuration = 4.0
-action-setgroundspeed.stimulusJerkThreshold = 0.5
-action-setgroundspeed.stimulusRateThreshold = 0.5
-action-setgroundspeed.stimulusThreshold = 1.0
-action-setgroundspeed.equilibrium = 10.0  # kph
-
 # action-setopticalrotation
-action-setopticalrotation.correctionGain = 0.2
-action-setopticalrotation.maxStimulusAge =  1.0
-action-setopticalrotation.patienceDuration = 0.2
-action-setopticalrotation.stimulusJerkThreshold =  0.02
-action-setopticalrotation.stimulusRateThreshold = 0.02
-action-setopticalrotation.stimulusThreshold = 0.02
+logic-action-setopticalrotation.correctionGain = 0.2
+logic-action-setopticalrotation.maxStimulusAge =  1.0
+logic-action-setopticalrotation.patienceDuration = 0.2
+logic-action-setopticalrotation.stimulusJerkThreshold =  0.02
+logic-action-setopticalrotation.stimulusRateThreshold = 0.02
+logic-action-setopticalrotation.stimulusThreshold = 0.02
 
-# knowledge-gcdc16-rule-intersection
-knowledge-gcdc16-rule-intersection.desiredGroundSpeed = 5.0 # 8.3 # m/s
-knowledge-gcdc16-rule-intersection.longitudinalDiscardDistance = 300.0
-knowledge-gcdc16-rule-intersection.lateralDiscardDistance = 50.0
-knowledge-gcdc16-rule-intersection.timeToCollision = 10.0
-knowledge-gcdc16-rule-intersection.crossingSafeAngle = 0.2
-knowledge-gcdc16-rule-intersection.isMioCrossingPath = 1   # 1 if the turning car is going to the other lane, 0 if going to the same lane
-knowledge-gcdc16-rule-intersection.enableLaneFollowing = 1
-knowledge-gcdc16-rule-intersection.forceScenarioStart = 1
-
-# knowledge-linguistics-v2vcam
-knowledge-linguistics-v2vcam.printOutbound = 0
-knowledge-linguistics-v2vcam.printInbound = 0
-knowledge-linguistics-v2vcam.record = 0
-
-# knowledge-gcdc16-v2viclcm
-knowledge-gcdc16-v2viclcm.participantsReady = 0
-knowledge-gcdc16-v2viclcm.printOutbound = 0
-knowledge-gcdc16-v2viclcm.printInbound = 0
-knowledge-gcdc16-v2viclcm.record = 0
-
-# knowledge-identity
-knowledge-identity.stationId = 110
-knowledge-identity.stationType = 8 #heavy truck
-knowledge-identity.vehicleLength = 7.3
-knowledge-identity.vehicleWidth = 2.55 
-knowledge-identity.vehicleRole = 0
-knowledge-identity.rearAxleLocation = 5.0
 
 # knowledge-scene
-knowledge-scene.mergeDistance = 4.0
-knowledge-scene.validUntilDuration = 1
-knowledge-scene.memoryCapacity = 5.0 # seconds
-knowledge-scene.debug = 0
+logic-knowledge-scene.mergeDistance = 4.0
+logic-knowledge-scene.validUntilDuration = 1
+logic-knowledge-scene.memoryCapacity = 5.0 # seconds
+logic-knowledge-scene.debug = 0
 
 # perception-detectlane
-perception-detectlane.intensityThreshold = 200
-perception-detectlane.cannyThreshold = 55
-perception-detectlane.houghThreshold = 145
-perception-detectlane.memThreshold = 0.5 #seconds
-perception-detectlane.upperLaneLimit = 250
-perception-detectlane.lowerLaneLimit = 620
-perception-detectlane.screenWidth = 1280
-perception-detectlane.screenHeight = 720
-perception-detectlane.roiX = 205
-perception-detectlane.roiY = 195
-perception-detectlane.roiWidth = 1075
-perception-detectlane.roiHeight = 515
-perception-detectlane.debug = 0
-
-# sensation-audition
-
-# sensation-geolocation
-sensation-geolocation.debug = 1
+logic-perception-detectlane.intensityThreshold = 130
+logic-perception-detectlane.adapThreshKernelSize = 5
+logic-perception-detectlane.adapThreshConst = 25
+logic-perception-detectlane.cannyThreshold = 160 #220
+logic-perception-detectlane.houghThreshold = 70 #80,100
+logic-perception-detectlane.lineDiff = 1.6 #1.6
+logic-perception-detectlane.HorisontalLimit = 3 # meters on each side we should consider
+logic-perception-detectlane.OneLineDiff = 5.0 #how much a line can differ between the two points
+logic-perception-detectlane.memThreshold = 0.5 #seconds
+logic-perception-detectlane.upperLaneLimit = 250
+logic-perception-detectlane.lowerLaneLimit = 450
+logic-perception-detectlane.screenWidth = 1280
+logic-perception-detectlane.screenHeight = 720
+logic-perception-detectlane.debug = 1
+logic-perception-detectlane.camera = front-left
+logic-perception-detectlane.blurKernelSize = 3
+logic-perception-detectlane.roiX = 30 #205 Pixels away from the upper left corner in X
+logic-perception-detectlane.roiWidth = 1100 #110 Done Pixel width of the captured box in X
+logic-perception-detectlane.roiY = 200 #200 Pixels away from the upper part of picture in Y
+logic-perception-detectlane.roiHeight = 400 #300 Pixel height of the captured box in Y
 
 # proxy-trimble
-proxy-trimble.ip = 10.42.42.112
+proxy-trimble.ip = 10.40.40.13
 proxy-trimble.port = 9999
 proxy-trimble.debug = 0
 
 # proxy-camera-axis
 proxy-camera-axis.type = opencv-ip-axis
 proxy-camera-axis.name = front-left
-proxy-camera-axis.address = 10.42.42.90
+proxy-camera-axis.address = 10.40.40.90
 proxy-camera-axis.username = root
 proxy-camera-axis.password = gcdc
 proxy-camera-axis.width = 1280
