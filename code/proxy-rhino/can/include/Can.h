@@ -29,6 +29,8 @@
 #include <opendavinci/odcore/base/FIFOQueue.h>
 #include <opendavinci/odcore/base/Mutex.h>
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/reflection/CSVFromVisitableVisitor.h>
 
 namespace automotive {
@@ -49,8 +51,6 @@ namespace opendlv {
 namespace proxy {
 namespace rhino {
 
-class CanMessageDataStore;
-
 using namespace std;
 
 /**
@@ -59,12 +59,30 @@ using namespace std;
 class Can : public odcore::base::module::TimeTriggeredConferenceClientModule,
                   public automotive::odcantools::GenericCANMessageListener {
    public:
+    class Requests {
+        public:
+            Requests();
+            Requests(const Requests&) = delete;
+            Requests& operator=(const Requests&) = delete;
+            virtual ~Requests();
+
+            odcore::base::Mutex m_mutex;
+            bool m_enableActuationBrake;
+            bool m_enableActuationSteering;
+            bool m_enableActuationThrottle;
+            float m_acceleration;
+            float m_steering;
+            odcore::data::TimeStamp m_lastUpdate;
+    };
+
+   public:
     Can(int32_t const &, char **);
     Can(Can const &) = delete;
     Can &operator=(Can const &) = delete;
     virtual ~Can();
 
     virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
+    virtual void nextContainer(odcore::data::Container &c);
 
    private:
     virtual void setUp();
@@ -80,6 +98,8 @@ class Can : public odcore::base::module::TimeTriggeredConferenceClientModule,
     void dumpCSVData(odcore::data::Container &c);
 
    private:
+    Requests m_requests;
+
     odcore::base::FIFOQueue m_fifoGenericCanMessages;
     std::unique_ptr< odtools::recorder::Recorder > m_recorderGenericCanMessages;
 
@@ -87,7 +107,6 @@ class Can : public odcore::base::module::TimeTriggeredConferenceClientModule,
     std::unique_ptr< odtools::recorder::Recorder > m_recorderMappedCanMessages;
 
     std::shared_ptr< automotive::odcantools::CANDevice > m_device;
-    std::unique_ptr< CanMessageDataStore > m_canMessageDataStore;
 
     canmapping::CanMapping m_rhinoCanMessageMapping;
 

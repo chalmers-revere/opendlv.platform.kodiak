@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <odcantools/SocketCANDevice.h>
+#include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/reflection/Message.h>
@@ -31,8 +32,10 @@
 
 #include <odvdopendlvstandardmessageset/GeneratedHeaders_ODVDOpenDLVStandardMessageSet.h> 
 #include <odvdrhino/GeneratedHeaders_ODVDRhino.h> 
+#include <odvdvehicle/GeneratedHeaders_ODVDVehicle.h>
 
-#include "CanMessageDataStore.h"
+#include <rhinogw/GeneratedHeaders_rhinogw.h>
+
 #include "Can.h"
 
 namespace opendlv {
@@ -46,15 +49,27 @@ using namespace odcore::reflection;
 using namespace odtools::recorder;
 using namespace automotive::odcantools;
 
+Can::Requests::Requests()
+    : m_mutex()
+    , m_enableActuationBrake(false)
+    , m_enableActuationSteering(false)
+    , m_enableActuationThrottle(false)
+    , m_acceleration(0)
+    , m_steering(0)
+    , m_lastUpdate()
+{}
+
+Can::Requests::~Requests() {}
+
 Can::Can(const int &argc, char **argv)
     : TimeTriggeredConferenceClientModule(argc, argv, "proxy-rhino-can")
     , GenericCANMessageListener()
+    , m_requests()
     , m_fifoGenericCanMessages()
     , m_recorderGenericCanMessages()
     , m_fifoMappedCanMessages()
     , m_recorderMappedCanMessages()
     , m_device()
-    , m_canMessageDataStore()
     , m_rhinoCanMessageMapping()
     , m_startOfRecording()
     , m_ASCfile()
@@ -71,18 +86,11 @@ void Can::setUp() {
 
     // If the device could be successfully opened, create a recording file to dump of the data.
     if (m_device.get() && m_device->isOpen()) {
-        cout << "[" << getName() << "]: "
-             << "Successfully opened CAN device '" << DEVICE_NODE << "'." << endl;
+        cout << "[" << getName() << "]: " << "Successfully opened CAN device '" << DEVICE_NODE << "'." << endl;
 
         // Automatically record all received raw CAN messages.
         m_startOfRecording = TimeStamp();
-        vector< string > timeStampNoSpace = odcore::strings::StringToolbox::split(m_startOfRecording.getYYYYMMDD_HHMMSS(), ' ');
-        stringstream strTimeStampNoSpace;
-        strTimeStampNoSpace << timeStampNoSpace.at(0);
-        if (timeStampNoSpace.size() == 2) {
-            strTimeStampNoSpace << "_" << timeStampNoSpace.at(1);
-        }
-        const string TIMESTAMP = strTimeStampNoSpace.str();
+        const string TIMESTAMP = m_startOfRecording.getYYYYMMDD_HHMMSS_noBlankNoColons();
 
         const bool RECORD_GCM = (getKeyValueConfiguration().getValue< int >("proxy-rhino-can.record_gcm") == 1);
         if (RECORD_GCM) {
@@ -95,46 +103,34 @@ void Can::setUp() {
         }
 
         bool valueFound = false;
-        bool enableActuationBrake = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-rhino-can.enableActuationBrake", valueFound);
+        m_requests.m_enableActuationBrake = getKeyValueConfiguration().getOptionalValue<bool>("proxy-rhino-can.enableActuationBrake", valueFound);
         if (!valueFound) {
-          enableActuationBrake = false;
+          m_requests.m_enableActuationBrake = false;
         }
-        if (!enableActuationBrake) {
+        if (!m_requests.m_enableActuationBrake) {
           std::cout << "The brakes are not enabled for control." << std::endl;
         }
 
-        bool enableActuationSteering = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-rhino-can.enableActuationSteering", valueFound);
+        m_requests.m_enableActuationSteering = getKeyValueConfiguration().getOptionalValue<bool>("proxy-rhino-can.enableActuationSteering", valueFound);
         if (!valueFound) {
-          enableActuationSteering = false;
+          m_requests.m_enableActuationSteering = false;
         }
-        if (!enableActuationSteering) {
+        if (!m_requests.m_enableActuationSteering) {
           std::cout << "The steering is not enabled for control." << std::endl;
         }
 
-        bool enableActuationThrottle = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-rhino-can.enableActuationThrottle", valueFound);
+        m_requests.m_enableActuationThrottle = getKeyValueConfiguration().getOptionalValue<bool>("proxy-rhino-can.enableActuationThrottle", valueFound);
         if (!valueFound) {
-          enableActuationThrottle = false;
+          m_requests.m_enableActuationThrottle = false;
         }
-        if (!enableActuationThrottle) {
+        if (!m_requests.m_enableActuationThrottle) {
           std::cout << "The throttle is not enabled for control." << std::endl;
         }
-
-        // Create a data sink that automatically receives all Containers and
-        // selectively relays them based on the Container type to the CAN device.
-        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device, enableActuationBrake, enableActuationSteering, enableActuationThrottle));
-        addDataStoreFor(*m_canMessageDataStore);
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
         m_device->start();
     } else {
-        cerr << "[" << getName() << "]: "
-             << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
+        cerr << "[" << getName() << "]: " << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
     }
 }
 
@@ -168,8 +164,8 @@ void Can::setUpRecordingMappedGenericCANMessage(const string &timeStampForFileNa
     const uint32_t MEMORY_SEGMENT_SIZE = 0;
 
     // Number of memory segments (not needed for recording GenericCANMessages).
-
     const uint32_t NUMBER_OF_SEGMENTS = 0;
+
     // Run recorder in asynchronous mode to allow real-time recording in background.
     const bool THREADING = true;
 
@@ -252,7 +248,28 @@ void Can::setUpRecordingGenericCANMessage(const string &timeStampForFileName) {
     (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
 }
 
-void Can::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) 
+void Can::nextContainer(Container &a_container) {
+    if (a_container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
+        auto actuationRequest = a_container.getData<opendlv::proxy::ActuationRequest>();
+        if (actuationRequest.getIsValid()) {
+            odcore::base::Lock l(m_requests.m_mutex);
+            m_requests.m_lastUpdate = odcore::data::TimeStamp(); // Set time point of last update for these values to now.
+            m_requests.m_steering = actuationRequest.getSteering();
+            m_requests.m_acceleration = actuationRequest.getAcceleration();
+            if (m_requests.m_acceleration < 0.0f) {
+                const float max_deceleration = -2.0f;
+                if (m_requests.m_acceleration < max_deceleration) {
+                    std::cout << "WARNING: Deceleration was limited to " 
+                              << max_deceleration << ". This should never happen, and "
+                              << "may be a safety violating behaviour!" << std::endl;
+                    m_requests.m_acceleration = max_deceleration;
+                }
+            }
+        }
+    }
+}
+
+void Can::nextGenericCANMessage(const automotive::GenericCANMessage &gcm)
 {
     // Log raw CAN data in ASC format.
     dumpASCData(gcm);
@@ -323,6 +340,63 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Can::body() {
                 dumpCSVData(c);
             }
         }
+
+        // Write values to CAN.
+        {
+            odcore::base::Lock l(m_requests.m_mutex);
+            odcore::data::TimeStamp now;
+
+            float brakeRequestValue = 0;
+            float throttleRequestValue = 0;
+            float steeringRequestValue = 0;
+
+            const int64_t ONE_SECOND = 1 * 1000 * 1000;
+            if ( abs((now - m_requests.m_lastUpdate).toMicroseconds()) < ONE_SECOND ) {
+                // Updates for actuation values received, prepare values to be sent.
+                brakeRequestValue = (m_requests.m_acceleration < 0) ? m_requests.m_acceleration : 0;
+                throttleRequestValue = (!(m_requests.m_acceleration < 0)) ? m_requests.m_acceleration : 0;
+                steeringRequestValue = m_requests.m_steering;
+            }
+
+            // Send brake request message.
+            {
+                opendlv::proxy::rhino::BrakeRequest brakeRequest;
+                brakeRequest.setEnableRequest(m_requests.m_enableActuationBrake);
+                brakeRequest.setBrake((m_requests.m_enableActuationBrake) ? brakeRequestValue : 0);
+
+                odcore::data::Container brakeRequestContainer(brakeRequest);
+                canmapping::opendlv::proxy::rhino::BrakeRequest brakeRequestMapping;
+                automotive::GenericCANMessage genericCanMessage = brakeRequestMapping.encode(brakeRequestContainer);
+                m_device->write(genericCanMessage);
+            }
+
+            // Send throttle request message.
+            {
+                opendlv::proxy::rhino::AccelerationRequest accelerationRequest;
+                accelerationRequest.setEnableRequest(m_requests.m_enableActuationThrottle);
+                accelerationRequest.setAccelerationPedalPosition((m_requests.m_enableActuationThrottle) ? throttleRequestValue : 0);
+
+                odcore::data::Container accelerationRequestContainer(accelerationRequest);
+                canmapping::opendlv::proxy::rhino::AccelerationRequest accelerationRequestMapping;
+                automotive::GenericCANMessage genericCanMessage = accelerationRequestMapping.encode(accelerationRequestContainer);
+                m_device->write(genericCanMessage);
+            }
+
+            // Send steering request message.
+            {
+                opendlv::proxy::rhino::SteeringRequest steeringRequest;
+                steeringRequest.setEnableRequest(m_requests.m_enableActuationSteering);
+                steeringRequest.setSteeringRoadWheelAngle(steeringRequestValue);
+
+                // Must be 33.535 to disable deltatorque.
+                steeringRequest.setSteeringDeltaTorque(33.535);
+
+                odcore::data::Container steeringRequestContainer(steeringRequest);
+                canmapping::opendlv::proxy::rhino::SteeringRequest steeringRequestMapping;
+                automotive::GenericCANMessage genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
+                m_device->write(genericCanMessage);
+            }
+        }
     }
 
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
@@ -340,7 +414,7 @@ void Can::dumpCSVData(Container &c) {
     m_receivedTS_ptr->setSize(sizeof(uint64_t));
 
     if ((m_mapOfCSVFiles.count(c.getDataType()) == 1) &&
-    (m_mapOfCSVVisitors.count(c.getDataType()) == 1)) {
+        (m_mapOfCSVVisitors.count(c.getDataType()) == 1)) {
         // We have a CSV file and a transformation available.
         if (c.getDataType() == opendlv::proxy::rhino::ManualControl::ID()) {
             opendlv::proxy::rhino::ManualControl temp = c.getData< opendlv::proxy::rhino::ManualControl >();
@@ -390,4 +464,4 @@ void Can::dumpASCData(const automotive::GenericCANMessage &gcm) {
 
 }
 }
-} 
+}
