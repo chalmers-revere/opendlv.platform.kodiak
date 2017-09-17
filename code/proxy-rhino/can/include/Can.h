@@ -58,7 +58,7 @@ using namespace std;
  */
 class Can : public odcore::base::module::TimeTriggeredConferenceClientModule,
                   public automotive::odcantools::GenericCANMessageListener {
-   public:
+   private:
     class Requests {
         public:
             Requests();

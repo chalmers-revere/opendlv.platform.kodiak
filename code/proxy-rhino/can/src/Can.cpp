@@ -54,8 +54,8 @@ Can::Requests::Requests()
     , m_enableActuationBrake(false)
     , m_enableActuationSteering(false)
     , m_enableActuationThrottle(false)
-    , m_acceleration(0)
-    , m_steering(0)
+    , m_acceleration(0.0f)
+    , m_steering(0.0f)
     , m_lastUpdate()
 {}
 
@@ -346,23 +346,24 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Can::body() {
             odcore::base::Lock l(m_requests.m_mutex);
             odcore::data::TimeStamp now;
 
-            float brakeRequestValue = 0;
-            float throttleRequestValue = 0;
-            float steeringRequestValue = 0;
+            float brakeRequestValue = 0.0f;
+            float throttleRequestValue = 0.0f;
+            float steeringRequestValue = 0.0f;
 
             const int64_t ONE_SECOND = 1 * 1000 * 1000;
-            if ( abs((now - m_requests.m_lastUpdate).toMicroseconds()) < ONE_SECOND ) {
+            const bool TIMEOUT = !(abs((now - m_requests.m_lastUpdate).toMicroseconds()) < ONE_SECOND);
+            if (!TIMEOUT) {
                 // Updates for actuation values received, prepare values to be sent.
-                brakeRequestValue = (m_requests.m_acceleration < 0) ? m_requests.m_acceleration : 0;
-                throttleRequestValue = (!(m_requests.m_acceleration < 0)) ? m_requests.m_acceleration : 0;
+                brakeRequestValue = (m_requests.m_acceleration < 0.0f) ? m_requests.m_acceleration : 0.0f;
+                throttleRequestValue = (!(m_requests.m_acceleration < 0.0f)) ? m_requests.m_acceleration : 0.0f;
                 steeringRequestValue = m_requests.m_steering;
             }
 
             // Send brake request message.
             {
                 opendlv::proxy::rhino::BrakeRequest brakeRequest;
-                brakeRequest.setEnableRequest(m_requests.m_enableActuationBrake);
-                brakeRequest.setBrake((m_requests.m_enableActuationBrake) ? brakeRequestValue : 0);
+                brakeRequest.setEnableRequest(!TIMEOUT && m_requests.m_enableActuationBrake);
+                brakeRequest.setBrake((m_requests.m_enableActuationBrake) ? brakeRequestValue : 0.0f);
 
                 odcore::data::Container brakeRequestContainer(brakeRequest);
                 canmapping::opendlv::proxy::rhino::BrakeRequest brakeRequestMapping;
@@ -373,8 +374,8 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Can::body() {
             // Send throttle request message.
             {
                 opendlv::proxy::rhino::AccelerationRequest accelerationRequest;
-                accelerationRequest.setEnableRequest(m_requests.m_enableActuationThrottle);
-                accelerationRequest.setAccelerationPedalPosition((m_requests.m_enableActuationThrottle) ? throttleRequestValue : 0);
+                accelerationRequest.setEnableRequest(!TIMEOUT && m_requests.m_enableActuationThrottle);
+                accelerationRequest.setAccelerationPedalPosition((m_requests.m_enableActuationThrottle) ? throttleRequestValue : 0.0f);
 
                 odcore::data::Container accelerationRequestContainer(accelerationRequest);
                 canmapping::opendlv::proxy::rhino::AccelerationRequest accelerationRequestMapping;
@@ -385,7 +386,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Can::body() {
             // Send steering request message.
             {
                 opendlv::proxy::rhino::SteeringRequest steeringRequest;
-                steeringRequest.setEnableRequest(m_requests.m_enableActuationSteering);
+                steeringRequest.setEnableRequest(!TIMEOUT && m_requests.m_enableActuationSteering);
                 steeringRequest.setSteeringRoadWheelAngle(steeringRequestValue);
 
                 // Must be 33.535 to disable deltatorque.
