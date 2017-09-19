@@ -1,0 +1,69 @@
+###############################################################################
+#
+# GLOBAL CONFIGURATION
+#
+
+# AstaZero Garage Area:
+global.reference.WGS84.latitude = 57.777025
+global.reference.WGS84.longitude = 12.781155
+
+# AstaZero High Speed Area:
+#global.reference.WGS84.latitude = 57.780860
+#global.reference.WGS84.longitude = 12.773900
+
+# AstaZero City Area:
+#global.reference.WGS84.latitude = 57.772840
+#global.reference.WGS84.longitude = 12.769964
+
+# AstaZero Rural Road:
+#global.reference.WGS84.latitude = 57.77145065 
+#global.reference.WGS84.longitude = 12.77508563
+
+# Revere lab:
+#global.reference.WGS84.latitude = 57.709134
+#global.reference.WGS84.longitude = 11.947603
+
+# Umea:
+#global.reference.WGS84.latitude = 63.792379
+#global.reference.WGS84.longitude = 20.285961
+
+global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
+global.buffer.numberOfMemorySegments = 4  # Number of memory segments.
+
+odsupercomponent.pulseshift.shift = 10000 # (in microseconds)
+odsupercomponent.pulsetimeack.timeout = 5000 # (in milliseconds)
+odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
+odsupercomponent.pulsetimeack.exclude = odcockpit
+
+###############################################################################
+
+proxy-rhino-can.devicenode = can0
+proxy-rhino-can.record_gcm = 0           # 1 = dump generic CAN messages.
+proxy-rhino-can.record_mapped_data = 0   # 1 = record mapped containers.
+proxy-rhino-can.enableActuationBrake = 1
+proxy-rhino-can.enableActuationSteering = 1
+proxy-rhino-can.enableActuationThrottle = 1
+
+proxy-trimble.ip = 10.42.42.112
+proxy-trimble.port = 9999
+proxy-trimble.debug = 0
+
+proxy-v2xin.adapter = wlp4s0
+proxy-v2xin.filter-sender-ids = 113
+proxy-v2xin.filter-message-ids = 19,215
+
+
+logic-legacy-vehiclefollower.distance_from_reference_limit = 50.0
+logic-legacy-vehiclefollower.ego-vehicle-id = 5
+logic-legacy-vehiclefollower.target-vehicle-id = 115
+logic-legacy-vehiclefollower.aim_point_gain = 0.4
+logic-legacy-vehiclefollower.steering_filter_coefficient = 0.5
+logic-legacy-vehiclefollower.desired_distance = 20.0
+logic-legacy-vehiclefollower.desired_distance_correction_time = 3.0
+logic-legacy-vehiclefollower.maximum_speed = 11.0
+logic-legacy-vehiclefollower.acceleration_k = 10
+logic-legacy-vehiclefollower.acceleration_limit = 30.0
+logic-legacy-vehiclefollower.deceleration_k = 2.5
+logic-legacy-vehiclefollower.deceleration_limit = -2.0
+
+

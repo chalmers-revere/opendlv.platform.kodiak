@@ -21,31 +21,23 @@ version: '2'
 
 services:
     odsupercomponent:
-        build: .
-        network_mode: "host"
-        volumes:
-        - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+      image: ${IMAGE}
+      network_mode: "host"
+      volumes:
+        - .:/opt/rhino.data
+      command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/rhino.data/configuration"
 
     proxy-rhino-can:
-        build: .
-        network_mode: "host"
-        privileged: true
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.rhino/bin/opendlv-proxy-rhino-can --cid=${CID} --freq=100"
+      image: ${IMAGE}
+      depends_on:
+        - odsupercomponent
+      network_mode: "host"
+      privileged: true
+      command: "/opt/opendlv.rhino/bin/opendlv-proxy-rhino-can --cid=${CID} --id=5 --freq=100"
 
-    proxy-v2xin:
-        build: .
-        network_mode: "host"
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xin --cid=${CID}"
-
-    # Add the vehicle follower
-
-
-
-# To watch the data, start odlivefeed:
-# docker run --rm -ti --net=host seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest /opt/od4/bin/odlivefeed --cid=114
-
+    proxy-trimble:
+      image: ${IMAGE}
+      depends_on:
+        - odsupercomponent
+      network_mode: "host"
+      command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID} --id=5"
