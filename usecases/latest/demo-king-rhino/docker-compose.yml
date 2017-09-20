@@ -28,7 +28,7 @@ services:
       command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/rhino.data/configuration"
 
     proxy-rhino-can:
-      image: ${IMAGE}
+      image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base-dev:v0.1.2-OD4.11.1
       depends_on:
         - odsupercomponent
       network_mode: "host"
