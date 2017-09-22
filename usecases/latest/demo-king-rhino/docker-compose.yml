@@ -41,3 +41,4 @@ services:
         - odsupercomponent
       network_mode: "host"
       command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID} --id=5"
+

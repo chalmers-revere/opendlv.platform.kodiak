@@ -44,7 +44,7 @@ proxy-rhino-can.enableActuationBrake = 1
 proxy-rhino-can.enableActuationSteering = 1
 proxy-rhino-can.enableActuationThrottle = 1
 
-proxy-trimble.ip = 10.42.42.112
+proxy-trimble.ip = 10.42.42.30
 proxy-trimble.port = 9999
 proxy-trimble.debug = 0
 
@@ -55,7 +55,7 @@ proxy-v2xin.filter-message-ids = 19,215
 
 logic-legacy-vehiclefollower.distance_from_reference_limit = 50.0
 logic-legacy-vehiclefollower.ego-vehicle-id = 5
-logic-legacy-vehiclefollower.target-vehicle-id = 115
+logic-legacy-vehiclefollower.target-vehicle-id = 113
 logic-legacy-vehiclefollower.aim_point_gain = 0.4
 logic-legacy-vehiclefollower.steering_filter_coefficient = 0.5
 logic-legacy-vehiclefollower.desired_distance = 20.0
@@ -67,3 +67,7 @@ logic-legacy-vehiclefollower.deceleration_k = 2.5
 logic-legacy-vehiclefollower.deceleration_limit = -2.0
 
 
+proxy-ledstrip.serialport = /dev/ttyUSB0
+proxy-ledstrip.baudrate = 115200
+proxy-ledstrip.activeledsize = 50
+proxy-ledstrip.fadesize = 10
