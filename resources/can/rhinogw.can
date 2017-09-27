@@ -66,7 +66,7 @@ CAN Message 0x103 vehiclespeed is 2 bytes {
     vehiclespeedpropshaft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
 }
 
-// CAN message for reading the wheel speed.
+// CAN messages for reading the wheel speed.
 CAN Message 0x102 wheelspeeds2 is 4 bytes {
     driveaxle2wheelspeedright at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
     driveaxle2wheelspeedleft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
@@ -76,6 +76,30 @@ CAN Message 0x101 wheelspeeds1 is 8 bytes {
     driveaxle1wheelspeedleft at bit 32 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
     frontaxle1wheelspeedright at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
     frontaxle1wheelspeedleft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+}
+
+// CAN messages for radar objects.
+CAN Message 0x111 radarobject1a is 8 bytes {
+    latdiststddev at bit 57 for 6 bit is unsigned little endian multiply by 0.127 add 0 with range [0, 8.001];
+    rellatspeed at bit 45 for 12 bit is unsigned little endian multiply by 0.025 add -51.2 with range [-51.2, 51.175];
+    longdiststddev at bit 41 for 4 bit is unsigned little endian multiply by 0.127 add 0 with range [0, 1.905];
+    msgcounter at bit 37 for 4 bit is unsigned little endian multiply by 1 add 0 with range [0, 15];
+    latdistance at bit 26 for 11 bit is unsigned little endian multiply by 0.1 add -102.4 with range [-102.4, 102.3];
+    longdistance at bit 13 for 13 bit is unsigned little endian multiply by 0.05 add 0 with range [0, 409.55];
+    rellongspeed at bit 0 for 13 bit is unsigned little endian multiply by 0.025 add -102.4 with range [-102.4, 102.375];
+}
+
+CAN Message 0x112 radarobject1b is 7 bytes {
+    status at bit 47 for 2 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
+    dynamics at bit 44 for 3 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
+    msgcounter at bit 40 for 4 bit is unsigned little endian multiply by 1 add 0 with range [0, 15];
+    roid at bit 34 for 6 bit is unsigned little endian multiply by 1 add 0 with range [0, 63];
+    rellongacc at bit 24 for 10 bit is unsigned little endian multiply by 0.05 add -25.6 with range [-25.6, 25.55];
+    width at bit 16 for 8 bit is unsigned little endian multiply by 0.1 add 0 with range [0, 25.5];
+    cutoutcutinpot at bit 8 for 8 bit is unsigned little endian multiply by 1 add -128 with range [-128, 127];
+    targetlaneplace at bit 5 for 3 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
+    class at bit 2 for 3 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
+    targetconfidence at bit 0 for 2 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,6 +116,7 @@ CAN Message 0x101 wheelspeeds1 is 8 bytes {
 // made available as soon as all required CAN signals have been received
 // from the low-level CAN receiver regardless of the received order.
 ///////////////////////////////////////////////////////////////////////////////
+
 mapping opendlv.proxy.rhino.Driveline {
 	driveline.enginetorque : 1;
 	driveline.enginespeed : 2;
@@ -148,6 +173,30 @@ unordered mapping opendlv.proxy.rhino.Wheels {
 unordered mapping opendlv.proxy.rhino.Steering {
     steering.roadwheelangle : 1;
     steering.steeringwheelangle : 2;
+}
+
+
+unordered mapping opendlv.proxy.rhino.RadarObject_1A {
+    radarobject1a.latdiststddev : 1;
+    radarobject1a.rellatspeed : 2;
+    radarobject1a.longdiststddev : 3;
+    radarobject1a.msgcounter : 4;
+    radarobject1a.latdistance : 5;
+    radarobject1a.longdistance : 6;
+    radarobject1a.rellongspeed : 7;
+}
+
+unordered mapping opendlv.proxy.rhino.RadarObject_1B {
+    radarobject1b.status : 1;
+    radarobject1b.dynamics : 2;
+    radarobject1b.msgcounter : 3;
+    radarobject1b.roid : 4;
+    radarobject1b.rellongacc : 5;
+    radarobject1b.width : 6;
+    radarobject1b.cutoutcutinpot : 7;
+    radarobject1b.targetlaneplace : 8;
+    radarobject1b.class : 9;
+    radarobject1b.targetconfidence : 10;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
