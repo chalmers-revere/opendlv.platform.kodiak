@@ -79,3 +79,27 @@ message opendlv.proxy.rhino.Driveline  [id = 200] {
 	float engineSpeed [id = 2];
 	int8 currentGear [id = 3];
 }
+
+message opendlv.proxy.rhino.RadarObject_1A [id = 321] {
+    double LatDistStdDev [id = 1];
+    double RelLatSpeed [id = 2];
+    double LongDistStdDev [id = 3];
+    uint8 MsgCounter [id = 4];
+    double LatDistance [id = 5];
+    double LongDistance [id = 6];
+    double RelLongSpeed [id = 7];
+}
+
+message opendlv.proxy.rhino.RadarObject_1B [id = 322] {
+    uint8 Status [id = 1];
+    uint8 Dynamics [id = 2];
+    uint8 MsgCounter [id = 3];
+    uint8 Id [id = 4];
+    double RelLongAcc [id = 5];
+    double Width [id = 6];
+    int8 CutOutCutInPot [id = 7];
+    uint8 TargetLanePlace [id = 8];
+    uint8 Class [id = 9];
+    uint8 TargetConfidence [id = 10];
+}
+

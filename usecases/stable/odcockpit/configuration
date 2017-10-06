@@ -18,16 +18,19 @@
 #
 # GLOBAL CONFIGURATION
 #
+global.car = file:///opt/opendlv.data/Car.objx
+global.scenario = file:///opt/opendlv.data/Track.scnx
+global.showGrid = 0
 
 # The following attributes define the buffer sizes for recording and
 # replaying. You need to adjust these parameters depending on the
 # camera resolution for example (640x480x3 --> 1000000 for memorySegment,
 # 1280x720x3 --> 2800000).
 global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
-global.buffer.numberOfMemorySegments = 4  # Number of memory segments.
+global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 
 # The following key describes the list of modules expected to participate in this --cid session.
-global.session.expectedModules = 
+global.session.expectedModules = HelloWorldExample,HelloWorldExample:2
 
 
 ###############################################################################
@@ -65,29 +68,31 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
+# CONFIGURATION FOR ODCOCKPIT
 #
+odcockpit.directoriesForSharedLibaries = /opt
 
 ###############################################################################
+###############################################################################
 #
+# CONFIGURATION FOR ODPLAYER
+#
+odplayer.input = file://recorder.rec
+odplayer.autoRewind = 0 # 0 = no rewind in the case of EOF, 1 = rewind.
+odplayer.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. play, pause, rewind, step_forward)
+odplayer.timeScale = 1.0 # A time scale factor of 1.0 means real time, a factor of 0 means as fast as possible. The smaller the time scale factor is the faster runs the replay.
+
 # CONFIGURATION FOR proxy-rhino
-#
+
 proxy-rhino-can.devicenode = can0        # PEAK CAN device using SocketCAN.
 proxy-rhino-can.record_gcm = 0           # 1 = dump generic CAN messages.
 proxy-rhino-can.record_mapped_data = 0   # 1 = record mapped containers.
 proxy-rhino-can.enableActuationBrake = 1
 proxy-rhino-can.enableActuationSteering = 1
 proxy-rhino-can.enableActuationThrottle = 1
+odrecorderh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
+odrecorderh264.dumpSharedData = 1 # 0 = do not dump shared images and shared images, 1 = otherwise
+odrecorderh264.lossless = 1 # Set to 1 to enable h264 lossless encoding.
+odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
 
-###############################################################################
-#
-# CONFIGURATION FOR ps3 controller
-#
-system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
 
-system-ps3controller.acceleration.min = 0
-system-ps3controller.acceleration.max = 50
-system-ps3controller.deceleration.min = 0
-system-ps3controller.deceleration.max = -10
-system-ps3controller.steering.min = -10
-system-ps3controller.steering.max = 10
