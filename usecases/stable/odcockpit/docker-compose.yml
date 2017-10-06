@@ -36,3 +36,16 @@ services:
           - odsupercomponent
         command: "/opt/opendlv.rhino/bin/opendlv-proxy-rhino-can --cid=${CID} --freq=100"
 
+    # Micro-service for odrecorderh264.
+    odrecorderh264:
+        build: .
+        depends_on:
+            - odsupercomponent
+        volumes:
+            - ~/recordings:/opt/recordings
+        user: odv
+        network_mode: host
+        ipc: host
+        working_dir: "/opt/recordings"
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
+
