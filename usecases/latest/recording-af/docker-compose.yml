@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+    odsupercomponent:
+        image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest
+        network_mode: "host"
+        volumes:
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+
+    proxy-rhino-can:
+        image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest
+        network_mode: "host"
+        privileged: true
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.rhino/bin/opendlv-proxy-rhino-can --cid=${CID} --freq=100"
+
+    odrecorderh264:
+        image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest
+        depends_on:
+            - odsupercomponent
+        volumes:
+            - ~/recordings:/opt/recordings
+        user: root
+        network_mode: "host"
+        ipc: host
+        working_dir: /opt/recordings
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
+
+    device-gps-pos:
+        image: chalmersrevere/opendlv-device-gps-pos-multi:v0.0.4
+        network_mode: "host"
+        command: opendlv-device-gps-pos --pos_ip=10.42.42.100 --pos_port=5602 --cid=${CID} --verbose
+
+    device-io-ue9-amd64:
+        image: olbender/opendlv-device-io-ue9-amd64:v0.0.1
+        network_mode: "host"
+        command: opendlv-device-io-ue9 --ip=10.42.42.101 --cid=${CID} --verbose
+
+    ui-default:
+        image: chalmersrevere/opendlv-ui-default-amd64:v0.0.4
+        network_mode: "host"
+        command: "--cid=${CID}"
