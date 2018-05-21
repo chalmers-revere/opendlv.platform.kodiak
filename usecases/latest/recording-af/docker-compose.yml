@@ -28,10 +28,10 @@ services:
         working_dir: /opt/recordings
         command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
 
-    device-gps-pos:
-        image: chalmersrevere/opendlv-device-gps-pos-multi:v0.0.4
+    device-gps-ncom:
+        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.5
         network_mode: "host"
-        command: opendlv-device-gps-pos --pos_ip=10.42.42.100 --pos_port=5602 --cid=${CID} --verbose
+        command: opendlv-device-gps-ncom --ncom_ip=10.42.42.56 --ncom_port=3000 --cid=${CID} --verbose
 
     device-io-ue9-amd64:
         image: olbender/opendlv-device-io-ue9-amd64:v0.0.1
